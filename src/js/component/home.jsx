@@ -1,106 +1,98 @@
 import React, { useState } from "react";
-import { Game } from "./componentes/game.jsx";
-import "./componentes/estilo.css";
-import "./componentes/estiloGame.css";
+import Tile from "/src/js/component/Tile.jsx";
+import Announcement from "/src/js/component/Announcement.jsx";
+import ResetButton from "/src/js/component/ResetButton.jsx";
+import "../../styles/index.css";
 
-//create your first component
 const Home = () => {
-  //
-  const [player, setPlayer] = useState("X");
+  // Almacenar el estado actual del tablero del juego, el turno y el ganador.
 
-  const [tabla, setTabla] = useState([
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+  const [gameBoard, setGameBoard] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
   ]);
+  const [turn, setTurn] = useState(""); // El jugador cuyo turno es actualmente ("X" o "O")
+  const [winner, setWinner] = useState(""); // El jugador ganador ("X", "O")
 
-  const [nombre1, setNombre1] = useState("");
-  const [nombre2, setNombre2] = useState("");
-  const [empate, setEmpate] = useState(false);
-
-  const clicGato = (index) => {
-    if (tabla[index] === null && !saberGanador(tabla)) {
-      const newTabla = tabla.slice();
-      newTabla[index] = player;
-      setTabla(newTabla);
-
-      setPlayer(player === "X" ? "O" : "X");
-    }
-    if (newTabla.every((cell) => cell !== null)) {
-      setEmpate(true);
-    }
-  };
-  const jugador1 = (event) => {
-    setNombre1(event.target.value);
+  // Función para establecer el Arma para comenzar el juego
+  const Weapon = (startWeapon) => {
+    setTurn(startWeapon);
   };
 
-  const jugador2 = (event) => {
-    setNombre2(event.target.value);
-  };
-  const saberGanador = (tabla) => {
-    const Ganador = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [2, 5, 8],
-      [1, 4, 7],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
+  // Función para manejar el click en una celda del tablero
+  const updateBoard = (location) => {
+    // Verificar si la celda está vacía y no hay ganador
+    if (gameBoard[location] === "" && !winner) {
+      const newBoard = [...gameBoard]; //Crea una copia nueva del array gameBoard
+      newBoard[location] = turn; // Colocar el símbolo del jugador actual en la celda
+      setGameBoard(newBoard); // Actualizar el tablero
 
-    for (let combinacion of Ganador) {
-      const [a, b, c] = combinacion;
-      if (tabla[a] && tabla[a] === tabla[b] && tabla[a] === tabla[c]) {
-        return tabla[a];
+      const newWinner = checkWinner(newBoard); // Verificar si hay un ganador
+      if (newWinner) {
+        setWinner(newWinner); // Establecer al ganador si lo hay
+      } else {
+        setTurn(turn === "X" ? "O" : "X"); // Alternar el turno entre "X" y "O"
       }
     }
-    if (tabla.every((cell) => cell !== null)) {
-      return "Empate";
-    }
+  };
+  const isBoardFull = gameBoard.every((cell) => cell !== ""); // Verificar si todas las celdas están llenas
 
-    return null;
+  // Función para verificar si hay un ganador basado en patrones de victoria predefinidas
+  const checkWinner = (board) => {
+    const winningPatterns = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8], // Filas
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8], // Columnas
+      [0, 4, 8],
+      [2, 4, 6], // Diagonales
+    ];
+
+    for (const pattern of winningPatterns) {
+      const [a, b, c] = pattern;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        return board[a]; // Retorna "X" o "O", el jugador ganador
+      }
+    }
+    return null; // Si no hay ganador
   };
 
-  const ganador = saberGanador(tabla);
-
-  const reiniciarPartida = () => {
-    window.location.reload();
+  // Función para reiniciar el juego
+  const resetBoard = () => {
+    setGameBoard(["", "", "", "", "", "", "", "", ""]); // Reiniciar el tablero
+    setTurn(""); // Reiniciar el turno a vacío
+    setWinner(""); // Reiniciar el ganador
   };
 
   return (
-    <div className="text-center">
-      <h1 className="text-center mt-5">Juguemos un Gato #</h1>
-      <h3>
-        Turno de "{player}": {player === "X" && nombre1}
-        {player === "O" && nombre2}
-      </h3>
-      <label>
-        Nombre del Jugador X:
-        <br />
-        <input type="text" value={nombre1} onChange={jugador1} />
-      </label>
-      <br />
-      <label>
-        Nombre del Jugador O:
-        <br />
-        <input type="text" value={nombre2} onChange={jugador2} />
-      </label>
-      <br />
-      <br />
-      <Game tabla={tabla} clicGato={clicGato} player={player} />
-      <h1>
-        {ganador === "X" && `${nombre1} es el Ganador`}
-        {ganador === "O" && `${nombre2} es el Ganador`}
-        {ganador === "Empate" && "¡Es un empate!"}
-      </h1>
-      <button onClick={reiniciarPartida}>Reiniciar</button>
+    <div className="container">
+      <div className="menu">
+        <h1>Tic-Tac-Toe</h1>
+        <Announcement winner={winner} isBoardFull={isBoardFull} />
+        <ResetButton reset={resetBoard} />
+        <div>
+          <button onClick={() => Weapon("X")}>Start as X</button>
+          <button onClick={() => Weapon("O")}>Start as O</button>
+        </div>
+      </div>
+      {gameBoard.map((value, i) => (
+        <Tile
+          key={i}
+          location={i}
+          value={value}
+          updateBoard={updateBoard}
+          turn={turn}
+        />
+      ))}
     </div>
   );
 };
