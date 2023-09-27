@@ -66,6 +66,7 @@ const Home = () => {
     setGameBoard(["", "", "", "", "", "", "", "", ""]);
     setTurn("");
     setWinner("");
+    setPlayerName(""); // Limpiar el nombre del jugador al reiniciar
   };
 
   return (
